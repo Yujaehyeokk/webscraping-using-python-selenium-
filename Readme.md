@@ -89,5 +89,188 @@ print(html.split("<title>")[1].split("</title>")[0])
 ```
 바로 위의 코드 결과로 '항공통계'라는 결과 값을 얻었다면, 웹과 정상적으로 연결이 되었으며 이제부터 입맛대로 옵션을 조정하여 정보를 조회할 수 있다.
 
-* 사실 위의 길이도 짧은 코드들을 얻기까지 꽤나 시간이 걸렸다. 처음에는 정적웹과 동적웹의 개념, 존재, 차이들도 몰랐기에 request 패키지와
-  beautifulsoup패키지를 통해 스크래핑 하려 하였으나 
+* *사실 위의 길이도 짧은 코드들을 얻기까지 꽤나 시간이 걸렸다. 처음에는 정적웹과 동적웹의 개념, 존재, 차이들도 몰랐기에 request 패키지와
+  beautifulsoup패키지를 통해 스크래핑 하려 하였으나 request로 불러온 웹사이트의 html 내용에는 필요한 부분의 데이터의 주소에 해당하는 html부분이 모두 빠져 있었고 구글링을 통해 동적웹이었다는 것을 깨달았다... 이후 selenium을 활용한 방향으로 전환하였고...*  
+  _(구글링하며 보긴했지만 request와 beautifulsoup를 활용해서도 동적웹을 스크래핑할 수 있다고한다...(?) 추후 기회가 된다면...)_
+
+## 본격적인 스크래핑
+
+```python
+#공항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+print('공항')
+for i in search:
+  print(i.text)
+
+#화물
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+print('화믈')
+
+for i in search:
+  print(i.text)
+
+#여객
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+print('여객')
+
+for i in search:
+  print(i.text)
+
+#공급
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+print('공급')
+
+for i in search:
+  print(i.text)
+
+#운항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+print('운항')
+
+for i in search:
+  print(i.text)
+```
+
+* 위의 코드 결과로 웹에서 내가 원하는 부분의 테이블 데이터를 가져왔다. 그러나, 옵션을 주지 않았기에 웹사이트에 처음 접속하면 나타나는
+  옵션에 대한 데이터가 나온다. 이제 옵션을 원하는대로 조정해보자
+
+
+```python
+#사전준비
+from selenium.webdriver import ActionChains #동작을 위한 요소
+act = webdriver.ActionChains(driver) #동작 제어문 지정
+
+from selenium.webdriver.support.ui import Select
+
+#웹사이트에서 가용한 옵션 경로지정(이후 코드에서 옵션을 선택할때 visible_text를 활용해 선택할것임 //다른 method를 사용해 [index or value로 선택 가능])
+
+##이 코드를 작성하는 순간의 웹사이트 기본 옵션은 다음과 같음
+####2023년도 7월~ 2023년도 7월 , 유임 + 환승, 전체, 전체, 전체, 국내선, 전체, 출발
+
+start_year_option=driver.find_element(By.CSS_SELECTOR,'#start_year') #시작년도 옵션(2009~2023 년도)
+
+end_year_option=driver.find_element(By.CSS_SELECTOR,'#end_year') #끝년도 옵션(2009~2023 년도)
+
+start_month_option=driver.find_element(By.CSS_SELECTOR,'#start_month') #시작 달 옵션(1~12 월)
+
+end_month_option=driver.find_element(By.CSS_SELECTOR,'#end_month') #끝 달 옵션(1~12 월)
+
+search_button=driver.find_element(By.CSS_SELECTOR,'.mainSearchBtn') #검색버튼
+
+pass_option=driver.find_element(By.CSS_SELECTOR,'#passGubun') # 여객옵션('전체', '유임여객', '무임여객', '유임 + 환승')
+
+cargo_option=driver.find_element(By.CSS_SELECTOR,'#cargeGubun') #화물 옵션('순화물','수화물','우편물)
+
+airport_option=driver.find_element(By.CSS_SELECTOR,'#airportGubun') #공항 옵션 ('인천(ICN)','김포(GMP)','김해(PUS)','제주(CJU)','대구(TAE)','광주(KWJ),'청주(CJJ)','무안(MWX)','여수(RSU)','울산(USN)','사천(HIN)','포항(KPO)','군산(KUV)','원주(WJU)','양양(YNY)')
+
+operations_option=driver.find_element(By.CSS_SELECTOR,'#snGubun') #운항 옵션('전체','부정기','정기')
+
+route_option=driver.find_element(By.CSS_SELECTOR,'#diGubun') #노선 옵션('국내선','국제선')
+
+passorcargo_option=driver.find_element(By.CSS_SELECTOR,'#pYNGubun') #여객화물 옵션('여객기','화물기')
+
+arrival_type_option=driver.find_element(By.CSS_SELECTOR,'#arvlType') #출발/도착 옵션('출발','출발+도착') ####'출발'옵션밖에 없으나, 노선옵션에서 국제선으로 변경시 '출발+도착'옵션으로 변경됨 (어떻게 활용할 수 있을지 의문)
+
+```
+- 웹의 옵션을 선택하거나, 검색버튼을 클릭하는 작용을 위한 구성을 하고, 각 옵션들의 웹 내에서 주소값을 저장해놓았다.
+   - 이후 코드에서 보겠지만 옵션을 조정할 때 각 옵션의 주소에 접근한 후 선택하거나 작동시키는 것이기 때문이다.
+```python
+### 예시 ###
+
+select = Select(start_month_option) # 시작 달 경로 선택
+select.select_by_visible_text('6') #옵션 중 6을 선택
+select = Select(end_month_option)
+select.select_by_visible_text('6')
+search_button.click() #검색버튼 클릭
+
+time.sleep(2) #웹페이지 로딩을 위해 충분한 시간이 있어야함(시간이 부족하면 원하는 결과값이 나오지 않거나, 덜 나오는 현상 발생) 이것은 명시적 대기에 해당함
+#공항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+print('공항')
+for i in search:
+  print(i.text)
+#화물
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+print('화믈')
+
+for i in search:
+  print(i.text)
+#여객
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+print('여객')
+
+for i in search:
+  print(i.text)
+#공급
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+print('공급')
+
+for i in search:
+  print(i.text)
+#운항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+print('운항')
+
+for i in search:
+  print(i.text)
+```
+  * 위 코드의 결과로 다른 옵션은 처음과 동일하지만, 시작달과 끝달이 6월인 즉, 2023년도 6월 한달간의 데이터를 조회할수 있을 터......인데.....? (에러가 발생할 것이다.....)
+
+    
+### _**아직도 모르겠는 부분**_
+
+```python
+from selenium.webdriver import ActionChains #동작을 위한 요소
+act = webdriver.ActionChains(driver) #동작 제어문 지정
+
+from selenium.webdriver.support.ui import Select
+
+### 예시 ###
+start_year_option=driver.find_element(By.CSS_SELECTOR,'#start_year') #시작년도 경로지정
+
+end_year_option=driver.find_element(By.CSS_SELECTOR,'#end_year') #끝년도 경로지정
+
+start_month_option=driver.find_element(By.CSS_SELECTOR,'#start_month') #시작 달 경로지정
+
+end_month_option=driver.find_element(By.CSS_SELECTOR,'#end_month') #끝 달 경로지정
+
+search_button=driver.find_element(By.CSS_SELECTOR,'.mainSearchBtn') #검색버튼 경로지정
+
+select = Select(start_month_option) # 시작 달 경로 선택
+select.select_by_visible_text('6') #옵션 중 6을 선택
+select = Select(end_month_option)
+select.select_by_visible_text('6')
+search_button.click() #검색버튼 클릭
+
+time.sleep(2) #웹페이지 로딩을 위해 충분한 시간이 있어야함(시간이 부족하면 원하는 결과값이 나오지 않거나, 덜 나오는 현상 발생) 이것은 명시적 대기에 해당함
+#공항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+print('공항')
+for i in search:
+  print(i.text)
+#화물
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+print('화믈')
+
+for i in search:
+  print(i.text)
+#여객
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+print('여객')
+
+for i in search:
+  print(i.text)
+#공급
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+print('공급')
+
+for i in search:
+  print(i.text)
+#운항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+print('운항')
+
+for i in search:
+  print(i.text)
+```
+애초에 위 코드가 정상작동한 것을 확인한뒤, 옵션의 주소는 주소대로, 데이터를 조회하는 구문은 따로 작성하고 싶어서 바로 위 코드를 두개로 나눈것이 그 위의 코드 2개이다. 아직 이해가 가지 않는 부분으로, chatgpt에게도 몇번을 물어봤으나 명확한 답은 알려주지 않았다...
