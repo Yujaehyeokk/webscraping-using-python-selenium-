@@ -283,3 +283,213 @@ for i in search:
 * 확정통계이기에 과거의 데이터는 변하지 않는다. 언제까지 귀찮은 조회를 반복해야하나?
 * 데이터를 한번에 놓고 볼 수 있게 저장을 하자 
   * 게다가 언제까지고 웹에 접속하여 조회를 하게되면 웹사이트에서도 지속적인 부담을 주게 되는 것이므로 지양해야한다고한다.
+
+
+```python
+airportlist = [] #공항명 리스트
+supplylist = [] # 공급(석) 리스트
+operationlist= [] # 운항(편) 리스트
+passengerlist = [] # 여객(명) 리스트
+cargolist = [] #화물(톤) 리스트
+
+#공항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+for i in search:
+  airportlist.append(i.text)
+
+#화물
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+for i in search:
+  cargolist.append(i.text)
+
+#여객
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+for i in search:
+  passengerlist.append(i.text)
+
+#공급
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+for i in search:
+  supplylist.append(i.text)
+
+#운항
+search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+for i in search:
+  operationlist.append(i.text)
+
+#조회기간
+search = driver.find_element(By.CSS_SELECTOR,'#searchText')
+period = search.text[7:24]
+
+import pandas as pd
+data={'공항명' : airportlist,'기간' : period , '공급(석)' : supplylist,'운항(편)' : operationlist,'여객(명)' : passengerlist,'화물(톤)':cargolist}
+df=pd.DataFrame(data)
+```
+* 다음과 같이 데이터프레임 형식으로 정리하면 나중에 시각화를 통해 무언가를 보이기에도 쉬울 것 같다.
+
+```python
+#한 시점의 데이터만 추출하여 데이터프레임으로 보여주고, 저장하는 함수정의
+def search_one_period(year, month, pas ='유임 + 환승', cargo = '전체', airport = '전체', operations = '전체', route = '국내선', passorcargo = '전체'):
+
+
+  select = Select(route_option) # 국내선인지 국제선인지
+  select.select_by_visible_text(str(route))
+
+  select = Select(start_year_option) # 시작년도
+  select.select_by_visible_text(str(year))
+
+  select = Select(end_year_option) # 끝 년도
+  select.select_by_visible_text(str(year))
+
+  select = Select(start_month_option) #시작 달
+  select.select_by_visible_text(str(month))
+
+  select = Select(end_month_option) # 끝 달
+  select.select_by_visible_text(str(month))
+
+  select = Select(pass_option) # 여객옵션
+  select.select_by_visible_text(str(pas))
+
+  select = Select(cargo_option) # 화물 옵션
+  select.select_by_visible_text(str(cargo))
+
+  select = Select(airport_option) # 공항 옵션
+  select.select_by_visible_text(str(airport))
+
+  select = Select(operations_option) # 운항 옵션
+  select.select_by_visible_text(str(operations))
+
+  select = Select(route_option) # 노선 옵션
+  select.select_by_visible_text(str(route))
+
+  select = Select(passorcargo_option) # 여객화물 옵션
+  select.select_by_visible_text(str(passorcargo))
+
+  search_button.click() #검색버튼 클릭
+
+  time.sleep(2) #웹페이지 로딩을 위해 충분한 시간이 있어야함(시간이 부족하면 원하는 결과값이 나오지 않거나, 덜 나오는 현상 발생) 이것은 명시적 대기에 해당함
+
+  airportlist = [] #공항명 리스트
+  supplylist = [] # 공급(석) 리스트
+  operationlist= [] # 운항(편) 리스트
+  passengerlist = [] # 여객(명) 리스트
+  cargolist = [] #화물(톤) 리스트
+
+  #공항
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+  for i in search:
+    airportlist.append(i.text)
+
+  #화물
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+  for i in search:
+    cargolist.append(i.text)
+
+  #여객
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+  for i in search:
+    passengerlist.append(i.text)
+
+  #공급
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+  for i in search:
+    supplylist.append(i.text)
+
+  #운항
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+  for i in search:
+    operationlist.append(i.text)
+
+  #조회기간
+  search = driver.find_element(By.CSS_SELECTOR,'#searchText')
+  period = search.text[7:24]
+
+  import pandas as pd
+  data={'공항명' : airportlist,'기간' : period , '공급(석)' : supplylist,'운항(편)' : operationlist,'여객(명)' : passengerlist,'화물(톤)':cargolist}
+  df=pd.DataFrame(data).set_index('공항명')
+
+  return df
+```
+```python
+#여러 시점의 데이터만 추출하여 데이터프레임으로 보여주고, 저장하는 함수정의
+def search_many_period(start_year, start_month, end_year , end_month , pas ='유임 + 환승', cargo = '전체', airport = '전체', operations = '전체', route = '국내선', passorcargo = '전체'):
+
+  select = Select(start_year_option) # 시작년도
+  select.select_by_visible_text(str(start_year))
+
+  select = Select(end_year_option) # 끝 년도
+  select.select_by_visible_text(str(end_year))
+
+  select = Select(start_month_option) #시작 달
+  select.select_by_visible_text(str(start_month))
+
+  select = Select(end_month_option) # 끝 달
+  select.select_by_visible_text(str(end_month))
+
+  select = Select(pass_option) # 여객옵션
+  select.select_by_visible_text(str(pas))
+
+  select = Select(cargo_option) # 화물 옵션
+  select.select_by_visible_text(str(cargo))
+
+  select = Select(airport_option) # 공항 옵션
+  select.select_by_visible_text(str(airport))
+
+  select = Select(operations_option) # 운항 옵션
+  select.select_by_visible_text(str(operations))
+
+  select = Select(route_option) # 노선 옵션
+  select.select_by_visible_text(str(route))
+
+  select = Select(passorcargo_option) # 여객화물 옵션
+  select.select_by_visible_text(str(passorcargo))
+
+
+
+  search_button.click() #검색버튼 클릭
+
+  time.sleep(2) #웹페이지 로딩을 위해 충분한 시간이 있어야함(시간이 부족하면 원하는 결과값이 나오지 않거나, 덜 나오는 현상 발생) 이것은 명시적 대기에 해당함
+
+  airportlist = [] #공항명 리스트
+  supplylist = [] # 공급(석) 리스트
+  operationlist= [] # 운항(편) 리스트
+  passengerlist = [] # 여객(명) 리스트
+  cargolist = [] #화물(톤) 리스트
+
+  #공항
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C1')
+  for i in search:
+    airportlist.append(i.text)
+
+  #화물
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C5')
+  for i in search:
+    cargolist.append(i.text)
+
+  #여객
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C4')
+  for i in search:
+    passengerlist.append(i.text)
+
+  #공급
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C2')
+  for i in search:
+    supplylist.append(i.text)
+
+  #운항
+  search = driver.find_elements(By.CSS_SELECTOR,'#mySheet-table > tbody > tr:nth-child(3) > td > div > div.GMPageOne > table > tbody .HideCol0C3')
+  for i in search:
+    operationlist.append(i.text)
+
+  #조회기간
+  search = driver.find_element(By.CSS_SELECTOR,'#searchText')
+  period = search.text[7:24]
+
+  import pandas as pd
+  data={'공항명' : airportlist,'기간' : period , '공급(석)' : supplylist,'운항(편)' : operationlist,'여객(명)' : passengerlist,'화물(톤)':cargolist}
+  df=pd.DataFrame(data)
+
+  return df.set_index('공항명')
+```
+* 한 시점의 데이터 조회, 여러 시점의 데이터 조회를 할 수 있는 함수를 정의하여 사용하기 용이하게 하였다.
+  
